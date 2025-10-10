@@ -1,0 +1,42 @@
+name: 'C++ Performance Profiler'
+description: 'Profiles C/C++ binaries for memory leaks and CPU hotspots using Valgrind & gperftools'
+branding:
+  icon: activity
+  color: purple
+
+inputs:
+  binaries:
+    description: 'Space-separated list of executable files to profile (relative to repo root)'
+    required: true
+  
+  valgrind-memcheck:
+    description: 'Run Valgrind memcheck (memory leaks)'
+    default: 'true'
+  
+  valgrind-callgrind:
+    description: 'Run Valgrind callgrind (CPU profiling)'
+    default: 'false'
+  
+  gperftools:
+    description: 'Run gperftools (CPU profiling – binary must be linked with -lprofiler)'
+    default: 'false'
+
+  fail-on-leak:
+    description: 'Fail the job if a memory leak is detected'
+    default: 'true'
+
+outputs:
+  artifacts:
+    description: 'Path to uploaded profiling artifacts'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+      - ${{ inputs.binaries }}
+  env:
+    INPUT_BINARIES: ${{ inputs.binaries }}
+    INPUT_VALGRIND_MEMCHECK: ${{ inputs.valgrind-memcheck }}
+    INPUT_VALGRIND_CALLGRIND: ${{ inputs.valgrind-callgrind }}
+    INPUT_GPERFTOOLS: ${{ inputs.gperftools }}
+    INPUT_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }} 
