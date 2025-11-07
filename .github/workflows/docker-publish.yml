@@ -3,6 +3,8 @@ name: Build and Push Docker Image to GHCR
 on:
   push:
     branches: [ main ]
+    paths:
+      - '.github/actions/cpp-profiler/**'
   release:
     types: [ published ]
 
@@ -15,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # Required for GHCR push
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -28,7 +30,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -42,7 +44,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: .github/actions/cpp-profiler   # ← Dockerfile is here
+          file: .github/actions/cpp-profiler/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
