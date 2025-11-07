@@ -3,6 +3,8 @@ name: Build and Push Docker Image to GHCR
 on:
   push:
     branches: [ main ]
+    paths:
+      - '.github/actions/cpp-profiler/**'    
   release:
     types: [ published ]
 
