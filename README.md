@@ -1,5 +1,7 @@
 # C++ Performance Profiler GitHub Action
 
+[![Experimental](https://img.shields.io/badge/status-experimental-red.svg?logo=github)](https://github.com/boxtob/cpp-perf-action/releases/tag/v0.2.0)
+
 Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on your C/C++ binaries in every PR.
 
 ![example badge](https://github.com/yourname/cpp-perf-action/workflows/C++%20Performance%20Profiling/badge.svg)
