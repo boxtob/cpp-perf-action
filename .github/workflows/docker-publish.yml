@@ -4,7 +4,10 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/actions/cpp-profiler/**'
+      - 'Dockerfile'
+      - 'action.yml'
+      - 'parse_profile.py'
+      - 'entrypoint.sh'
       - '.github/workflows/docker-publish.yml'
   release:
     types: [ published ]
@@ -49,8 +52,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .github/actions/cpp-profiler
-          file: .github/actions/cpp-profiler/Dockerfile
+          context: .
+          file: Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
