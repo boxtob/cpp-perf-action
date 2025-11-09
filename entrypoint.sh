@@ -70,17 +70,40 @@ for bin in "${BINARIES[@]}"; do
     echo "Running gperftools (100 Hz sampling)..."
     export CPUPROFILE_FREQUENCY=100
     export CPUPROFILE="${bin_name}_profile.out"
+
     "./$bin_name" || true
+
     if [[ -f "$CPUPROFILE" ]]; then
+      profile_size=$(stat -c%s "$CPUPROFILE" 2>/dev/null || echo 0)
+      echo "Profile size: $profile_size bytes"
+
+      if [[ $profile_size -lt 500 ]]; then
+        echo "::warning::Profile too small — no meaningful samples"
+        continue
+      fi
+
+      # Generate text report
       pprof --text "./$bin_name" "$CPUPROFILE" > "${bin_name}_pprof.out" 2>&1 || true
-      
+
+      # Generate flamegraph: pprof --dot → dot -Tpng
       echo "Generating flamegraph..."
-      if pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2> pprof_png_error.log; then
-        echo "Flamegraph created: ${bin_name}_flamegraph.png"
+      dot_file="${bin_name}_flamegraph.dot"
+      png_file="${bin_name}_flamegraph.png"
+
+      if pprof --dot "./$bin_name" "$CPUPROFILE" > "$dot_file" 2> pprof_dot_error.log; then
+        if dot -Tpng "$dot_file" -o "$png_file" 2> dot_error.log; then
+          png_size=$(stat -c%s "$png_file" 2>/dev/null || echo 0)
+          echo "Flamegraph created: $png_size bytes"
+        else
+          echo "::warning::dot failed:"
+          cat dot_error.log
+        fi
       else
-        echo "::warning::Failed to generate PNG:"
-        cat pprof_png_error.log
-      fi      
+        echo "::warning::pprof --dot failed:"
+        cat pprof_dot_error.log
+      fi
+    else
+      echo "::warning::No profile data generated"
     fi
   fi
 
