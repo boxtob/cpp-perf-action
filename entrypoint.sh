@@ -18,6 +18,18 @@ echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
   echo "::endgroup::"
 }
 
+# ---- Runtime apt install (system libraries) ----------------------------
+if [[ -n "${INPUT_APT_PACKAGES:-}" ]]; then
+  echo "Installing apt packages: $INPUT_APT_PACKAGES"
+  apt-get update && apt-get install -y $INPUT_APT_PACKAGES && rm -rf /var/lib/apt/lists/*
+fi
+
+# ---- LD_LIBRARY_PATH (user .so files) ----------------------------------
+if [[ -n "${INPUT_LD_LIBRARY_PATH:-}" ]]; then
+  export LD_LIBRARY_PATH="$INPUT_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+  echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+fi
+
 # ---- Binaries -----------------------------------------------------------
 BINARIES=("${@:-}")
 [[ ${#BINARIES[@]} -eq 0 ]] && {
@@ -26,12 +38,14 @@ BINARIES=("${@:-}")
 }
 
 for bin in "${BINARIES[@]}"; do
-  [[ ! -x "$bin" ]] && {
-    echo "::error::Binary '$bin' not found or not executable. Provide pre-built binary."
-    exit 1
-  }
+  full_path=$(realpath "$bin" 2>/dev/null || echo "$bin")
+  [[ ! -x "$full_path" ]] && { echo "::error::Binary '$bin' not found"; exit 1; }
 
-  echo "=== Profiling $bin ==="
+  bin_name=$(basename "$full_path")
+  bin_dir=$(dirname "$full_path")
+
+  echo "=== Profiling $bin ($full_path) ==="
+  pushd "$bin_dir" > /dev/null
 
   # Valgrind memcheck
   if [[ "${INPUT_VALGRIND_MEMCHECK:-true}" == "true" ]]; then
@@ -41,25 +55,32 @@ for bin in "${BINARIES[@]}"; do
       --track-origins=yes \
       --read-var-info=yes \
       --keep-debuginfo=yes \
-      "./$bin" \
-      > "${bin}_valgrind_memcheck.out" 2>&1 || true
+      "./$bin_name" \
+      > "${bin_name}_valgrind_memcheck.out" 2>&1 || true
   fi
 
   # Valgrind callgrind
   if [[ "${INPUT_VALGRIND_CALLGRIND:-false}" == "true" ]]; then
-    valgrind --tool=callgrind "./$bin" \
-      > "${bin}_valgrind_callgrind.out" 2>&1 || true
+    valgrind --tool=callgrind "./$bin_name" \
+      > "${bin_name}_valgrind_callgrind.out" 2>&1 || true
   fi
 
   # gperftools
   if [[ "${INPUT_GPERFTOOLS:-false}" == "true" ]]; then
     echo "Running gperftools (100 Hz sampling)..."
     export CPUPROFILE_FREQUENCY=100
-    export CPUPROFILE="${bin}_profile.out"
-    "./$bin" || true
-    if [[ -f "${bin}_profile.out" ]]; then
-      pprof --text "/workspace/$bin" "${bin}_profile.out" > "${bin}_pprof.out" 2>&1 || true
-      pprof --png  "/workspace/$bin" "${bin}_profile.out" > "${bin}_flamegraph.png" 2>&1 || true
+    export CPUPROFILE="${bin_name}_profile.out"
+    "./$bin_name" || true
+    if [[ -f "$CPUPROFILE" ]]; then
+      pprof --text "./$bin_name" "$CPUPROFILE" > "${bin_name}_pprof.out" 2>&1 || true
+      
+      echo "Generating flamegraph..."
+      if pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2> pprof_png_error.log; then
+        echo "Flamegraph created: ${bin_name}_flamegraph.png"
+      else
+        echo "::warning::Failed to generate PNG:"
+        cat pprof_png_error.log
+      fi      
     fi
   fi
 
@@ -83,7 +104,7 @@ fi
 ARTIFACT_DIR="artifacts"
 mkdir -p "$ARTIFACT_DIR"
 
-# Copy from container's /tmp to host's $GITHUB_WORKSPACE
+# Copy from container's current dir to ARTIFACT_DIR
 cp -f *.out "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
