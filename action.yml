@@ -25,6 +25,16 @@ inputs:
     description: 'Fail the job if a memory leak is detected'
     default: 'true'
 
+  apt-packages:
+    description: 'Space-separated list of apt packages to install at runtime'
+    required: false
+    default: ''
+
+  ld-library-path:
+    description: 'Colon-separated list of directories for custom .so files'
+    required: false
+    default: ''    
+
 outputs:
   artifacts:
     description: 'Path to uploaded profiling artifacts'
@@ -40,3 +50,5 @@ runs:
     INPUT_VALGRIND_CALLGRIND: ${{ inputs.valgrind-callgrind }}
     INPUT_GPERFTOOLS: ${{ inputs.gperftools }}
     INPUT_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }} 
+    INPUT_APT_PACKAGES: ${{ inputs.apt-packages }}
+    INPUT_LD_LIBRARY_PATH: ${{ inputs.ld-library-path }}    
