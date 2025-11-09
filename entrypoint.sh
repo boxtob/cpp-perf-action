@@ -128,7 +128,7 @@ ARTIFACT_DIR="artifacts"
 mkdir -p "$ARTIFACT_DIR"
 
 # Copy from container's current dir to ARTIFACT_DIR
-cp -f *.out "$ARTIFACT_DIR"/ 2>/dev/null || true
+cp -f *.out *.png "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
 
