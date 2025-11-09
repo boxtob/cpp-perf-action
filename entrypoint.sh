@@ -56,7 +56,7 @@ for bin in "${BINARIES[@]}"; do
       --read-var-info=yes \
       --keep-debuginfo=yes \
       "./$bin_name" \
-      > "/tmp/artifacts/${bin_name}_valgrind_memcheck.out" 2>&1 || true
+      > "${bin_name}_valgrind_memcheck.out" 2>&1 || true
   fi
 
   # Valgrind callgrind
@@ -73,7 +73,15 @@ for bin in "${BINARIES[@]}"; do
     "./$bin_name" || true
     if [[ -f "$CPUPROFILE" ]]; then
       pprof --text "./$bin_name" "$CPUPROFILE" > "${bin_name}_pprof.out" 2>&1 || true
-      pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2>&1 || true
+      
+    echo "Generating flamegraph..."
+    if pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2> pprof_png_error.log; then
+      echo "Flamegraph created: ${bin_name}_flamegraph.png"
+    else
+      echo "::warning::Failed to generate PNG:"
+      cat pprof_png_error.log
+    fi      
+
     fi
   fi
 
