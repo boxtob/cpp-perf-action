@@ -70,49 +70,19 @@ for bin in "${BINARIES[@]}"; do
     echo "Running gperftools (100 Hz sampling)..."
     export CPUPROFILE_FREQUENCY=100
     export CPUPROFILE="${bin_name}_profile.out"
-
-    # Run binary
     "./$bin_name" || true
-
-    # Check profile
-    if [[ ! -f "$CPUPROFILE" ]]; then
-      echo "::warning::No profile data — binary not linked with -lprofiler"
-      continue
+    if [[ -f "$CPUPROFILE" ]]; then
+      pprof --text "./$bin_name" "$CPUPROFILE" > "${bin_name}_pprof.out" 2>&1 || true
+      
+      echo "Generating flamegraph..."
+      if pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2> pprof_png_error.log; then
+        echo "Flamegraph created: ${bin_name}_flamegraph.png"
+      else
+        echo "::warning::Failed to generate PNG:"
+        cat pprof_png_error.log
+      fi      
     fi
-
-    size=$(stat -c%s "$CPUPROFILE")
-    echo "Profile size: $size bytes"
-
-    if [[ $size -lt 1000 ]]; then
-      echo "::warning::Profile too small — no meaningful samples"
-      continue
-    fi
-
-    # Verify dot
-    if ! command -v dot &> /dev/null; then
-      echo "::error::graphviz 'dot' not found"
-      exit 1
-    fi
-    echo "dot version: $(dot -V 2>&1 || echo 'unknown')"
-
-    # Generate text report
-    pprof --text "./$bin_name" "$CPUPROFILE" > "${bin_name}_pprof.out" 2>&1
-
-    # Generate PNG with full debug
-    echo "Generating flamegraph..."
-    set +e
-    pprof --png "./$bin_name" "$CPUPROFILE" > "${bin_name}_flamegraph.png" 2> pprof_png_error.log
-    pprof_exit=$?
-    set -e
-
-    if [[ $pprof_exit -eq 0 ]] && [[ -s "${bin_name}_flamegraph.png" ]]; then
-      png_size=$(stat -c%s "${bin_name}_flamegraph.png")
-      echo "Flamegraph created: $png_size bytes"
-    else
-      echo "::warning::Failed to generate PNG (exit code: $pprof_exit)"
-      cat pprof_png_error.log
-    fi
-fi
+  fi
 
   # Parse
   /app/venv/bin/python /app/parse_profile.py \
@@ -134,7 +104,7 @@ fi
 ARTIFACT_DIR="artifacts"
 mkdir -p "$ARTIFACT_DIR"
 
-# Copy from container's /tmp to host's $GITHUB_WORKSPACE
+# Copy from container's current dir to ARTIFACT_DIR
 cp -f *.out "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
