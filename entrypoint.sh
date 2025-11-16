@@ -30,6 +30,15 @@ if [[ -n "${INPUT_LD_LIBRARY_PATH:-}" ]]; then
   echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
 fi
 
+# ---- Runtime args -------------------------------------------------------
+RUN_ARGS=()
+if [[ -n "${INPUT_RUN_ARGS:-}" ]]; then
+  RUN_ARGS=($INPUT_RUN_ARGS)
+  echo "Runtime args: ${RUN_ARGS[*]}"
+else
+  echo "Runtime args: none"
+fi
+
 # ---- Binaries -----------------------------------------------------------
 BINARIES=("${@:-}")
 [[ ${#BINARIES[@]} -eq 0 ]] && {
@@ -49,29 +58,50 @@ for bin in "${BINARIES[@]}"; do
 
   # Valgrind memcheck
   if [[ "${INPUT_VALGRIND_MEMCHECK:-true}" == "true" ]]; then
-    valgrind --tool=memcheck \
-      --leak-check=full \
-      --show-leak-kinds=all \
-      --track-origins=yes \
-      --read-var-info=yes \
-      --keep-debuginfo=yes \
-      "./$bin_name" \
-      > "${bin_name}_valgrind_memcheck.out" 2>&1 || true
+    if [[ ${#RUN_ARGS[@]} -gt 0 ]]; then
+      valgrind --tool=memcheck \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        --read-var-info=yes \
+        --keep-debuginfo=yes \
+        "./$bin_name" "${RUN_ARGS[@]}" \
+        > "${bin_name}_valgrind_memcheck.out" 2>&1 || true
+    else
+      valgrind --tool=memcheck \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        --read-var-info=yes \
+        --keep-debuginfo=yes \
+        "./$bin_name" \
+        > "${bin_name}_valgrind_memcheck.out" 2>&1 || true
+    fi
   fi
 
   # Valgrind callgrind
   if [[ "${INPUT_VALGRIND_CALLGRIND:-false}" == "true" ]]; then
-    valgrind --tool=callgrind "./$bin_name" \
-      > "${bin_name}_valgrind_callgrind.out" 2>&1 || true
+    if [[ ${#RUN_ARGS[@]} -gt 0 ]]; then
+      valgrind --tool=callgrind "./$bin_name" "${RUN_ARGS[@]}" \
+        > "${bin_name}_valgrind_callgrind.out" 2>&1 || true
+    else
+      valgrind --tool=callgrind "./$bin_name" \
+        > "${bin_name}_valgrind_callgrind.out" 2>&1 || true
+    fi
   fi
 
   # gperftools
   if [[ "${INPUT_GPERFTOOLS:-false}" == "true" ]]; then
-    echo "Running gperftools (100 Hz sampling)..."
+    echo "Running gperftools with args: ${RUN_ARGS[*]:-none}"
     export CPUPROFILE_FREQUENCY=100
     export CPUPROFILE="${bin_name}_profile.out"
 
-    "./$bin_name" || true
+  # Run binary with args
+    if [[ ${#RUN_ARGS[@]} -gt 0 ]]; then
+      "./$bin_name" "${RUN_ARGS[@]}" || true
+    else
+      "./$bin_name" || true
+    fi
 
     if [[ -f "$CPUPROFILE" ]]; then
       profile_size=$(stat -c%s "$CPUPROFILE" 2>/dev/null || echo 0)
