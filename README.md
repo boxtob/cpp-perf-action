@@ -1,6 +1,6 @@
 # C++ Performance Profiler GitHub Action
 
-[![Experimental](https://img.shields.io/badge/status-experimental-red.svg?logo=github)](https://github.com/boxtob/cpp-perf-action/releases/tag/v0.3.1)
+![Version](https://img.shields.io/github/v/release/boxtob/cpp-perf-action)
 
 Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on your C/C++ binaries in every PR.
 
@@ -17,7 +17,7 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
 
 ```yaml
 - name: Run C++ Profiler (Experimental)
-  uses: boxtob/cpp-perf-action@v0.4.1
+  uses: boxtob/cpp-perf-action@v1.0.1
   with:
     binaries: build/test
     apt-packages: libgl1-mesa-dev libglfw3-dev
