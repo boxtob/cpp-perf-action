@@ -127,8 +127,13 @@ fi
 ARTIFACT_DIR="artifacts"
 mkdir -p "$ARTIFACT_DIR"
 
-# Copy from container's current dir to ARTIFACT_DIR
-cp -f *.out *.png "$ARTIFACT_DIR"/ 2>/dev/null || true
+#  Copy from container's current dir to ARTIFACT_DIR
+## valgrind output
+cp -f "${bin_name}_*.out" "$ARTIFACT_DIR"/ 2>/dev/null || true
+## flamegraph png
+cp -f "${bin_name}_*.png" "$ARTIFACT_DIR"/ 2>/dev/null || true
+## flamegraph dot file
+cp -f "${bin_name}_*.dot" "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
 
