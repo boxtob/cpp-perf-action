@@ -35,6 +35,11 @@ inputs:
     required: false
     default: ''    
 
+  run-args:
+    description: 'Space-separated runtime arguments to pass to each binary'
+    required: false
+    default: ''
+
 outputs:
   artifacts:
     description: 'Path to uploaded profiling artifacts'
@@ -52,3 +57,4 @@ runs:
     INPUT_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }} 
     INPUT_APT_PACKAGES: ${{ inputs.apt-packages }}
     INPUT_LD_LIBRARY_PATH: ${{ inputs.ld-library-path }}    
+    INPUT_RUN_ARGS: ${{ inputs.run-args }}
