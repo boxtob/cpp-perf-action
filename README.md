@@ -33,3 +33,26 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
   with:
     name: profiling-results
     path: ${{ steps.profiler.outputs.artifacts }}
+```
+
+
+## Binary Compatibility
+
+This Action runs in an **Ubuntu 24.04** Docker container (glibc 2.39).
+
+Your binary will work if built on:
+
+- Ubuntu 20.04+
+- Debian 11+
+- Fedora 34+
+- Arch Linux, Manjaro, openSUSE, etc.
+- WSL2 (Ubuntu/Debian)
+- Any cross-compile targeting `x86_64-linux-gnu` with glibc ≤ 2.39
+
+Will **NOT** work:
+- Alpine Linux (uses musl)
+- macOS / Windows binaries
+- ARM binaries
+- Very old distros (e.g., CentOS 7)
+
+**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest`) — guaranteed compatibility.
