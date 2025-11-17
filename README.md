@@ -1,6 +1,7 @@
 # C++ Performance Profiler GitHub Action
 
 ![Version](https://img.shields.io/github/v/release/boxtob/cpp-perf-action)
+![Flamegraph example](https://raw.githubusercontent.com/boxtob/cpp-perf-action/media/hotspot_leak_flamegraph.png)
 
 Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on your C/C++ binaries in every PR.
 
