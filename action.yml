@@ -16,6 +16,16 @@ inputs:
   valgrind-callgrind:
     description: 'Run Valgrind callgrind (CPU profiling)'
     default: 'false'
+
+  valgrind-cachegrind:
+    description: 'Run Valgrind Cachegrind (pure L1/LL cache simulation)'
+    required: false
+    default: 'false'
+  
+  valgrind-cachegrind-out-file:
+    description: 'Cachegrind output filename pattern (%p = PID)'
+    required: false
+    default: 'cachegrind.out.%p'    
   
   gperftools:
     description: 'Run gperftools (CPU profiling – binary must be linked with -lprofiler)'

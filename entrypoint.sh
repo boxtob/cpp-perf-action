@@ -90,6 +90,30 @@ for bin in "${BINARIES[@]}"; do
     fi
   fi
 
+  # Cachegrind (pure cache simulation)
+  if [[ "${INPUT_VALGRIND_CACHEGRIND:-false}" == "true" ]]; then
+    echo "Running Valgrind Cachegrind (L1/LL cache simulation)..."
+
+    cachegrind_file="${bin_name}_${INPUT_VALGRIND_CACHEGRIND_OUT_FILE:-cachegrind.out.%p}"
+
+    valgrind --tool=cachegrind \
+      --cachegrind-out-file="$cachegrind_file" \
+      "./$bin_name" "${RUN_ARGS[@]}" \
+      > "${bin_name}_cachegrind.out" 2>&1 || true
+
+    # Generate human-readable summary with cg_annotate
+    if command -v cg_annotate &>/dev/null; then
+      echo "Generating cg_annotate summary..."
+      for cg_file in ${bin_name}_cachegrind.out.*; do
+        [[ -f "$cg_file" ]] || continue
+        cg_annotate "$cg_file" "./$bin_name" \
+          > "$(basename "$cg_file" .out.*)_cachegrind_summary.txt" 2>&1 || true
+      done
+    else
+      echo "::warning::cg_annotate not found — skipping summary"
+    fi
+  fi
+
   # gperftools
   if [[ "${INPUT_GPERFTOOLS:-false}" == "true" ]]; then
     echo "Running gperftools with args: ${RUN_ARGS[*]:-none}"
@@ -158,7 +182,7 @@ ARTIFACT_DIR="artifacts"
 mkdir -vp "$ARTIFACT_DIR"
 
 # Copy from container's current dir to ARTIFACT_DIR
-cp -vf *.out *.png *.dot "$ARTIFACT_DIR"/ 2>/dev/null || true
+cp -vf *.out *.png *.dot *.txt "*.out.*" "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
 
