@@ -16,6 +16,16 @@ inputs:
   valgrind-callgrind:
     description: 'Run Valgrind callgrind (CPU profiling)'
     default: 'false'
+
+  valgrind-cachegrind:
+    description: 'Run Valgrind Cachegrind (pure L1/LL cache simulation)'
+    required: false
+    default: 'false'
+  
+  valgrind-cachegrind-out-file:
+    description: 'Cachegrind output filename pattern (%p = PID)'
+    required: false
+    default: 'cachegrind.out.%p'    
   
   gperftools:
     description: 'Run gperftools (CPU profiling – binary must be linked with -lprofiler)'
@@ -53,6 +63,8 @@ runs:
     INPUT_BINARIES: ${{ inputs.binaries }}
     INPUT_VALGRIND_MEMCHECK: ${{ inputs.valgrind-memcheck }}
     INPUT_VALGRIND_CALLGRIND: ${{ inputs.valgrind-callgrind }}
+    INPUT_VALGRIND_CACHEGRIND: ${{ inputs.valgrind-cachegrind }}
+    INPUT_VALGRIND_CACHEGRIND_OUT_FILE: ${{ inputs.valgrind-cachegrind-out-file }}
     INPUT_GPERFTOOLS: ${{ inputs.gperftools }}
     INPUT_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }} 
     INPUT_APT_PACKAGES: ${{ inputs.apt-packages }}
