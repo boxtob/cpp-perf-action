@@ -165,6 +165,7 @@ for bin in "${BINARIES[@]}"; do
   /app/venv/bin/python /app/parse_profile.py \
     "${bin}_valgrind_memcheck.out" \
     "${bin}_valgrind_callgrind.out" \
+    "${bin_name}_cachegrind.out" \    
     "${bin}_pprof.out" \
     "$bin"
 done

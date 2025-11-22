@@ -46,6 +46,37 @@ def parse_valgrind_callgrind(file_path):
 
     return bool(hotspots)
 
+def parse_valgrind_cachegrind(file_path):
+    # Try the summary file first (preferred)
+    summary_path = file_path.replace(".out", "_summary.txt")
+    if os.path.exists(summary_path):
+        with open(summary_path, "r") as f:
+            output = f.read()
+    elif os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            output = f.read()
+    else:
+        return False
+
+    # Extract global cache misses
+    i1 = re.search(r"I1\s+misses:\s+([\d,]+)", output)
+    ll = re.search(r"LL\s+misses:\s+([\d,]+)", output)
+    if i1 or ll:
+        i1_val = i1.group(1).replace(",", "") if i1 else "0"
+        ll_val = ll.group(1).replace(",", "") if ll else "0"
+        print(f"::warning::Cache misses → I1: {i1_val}, LL: {ll_val}")
+
+    # Extract per-function hotspot lines
+    # Example: "  1,234,567  12.3%  123,456  test.cpp:main"
+    pattern = r"^\s*[\d,]+\s+[\d.]+\%\s*[\d,]+\s+(.+?)\s+\((.*?):(\d+)\)"
+    matches = re.findall(pattern, output, re.MULTILINE)
+    for func, file_name, line in matches:
+        if file_name.startswith("/workspace/"):
+            file_name = file_name.replace("/workspace/", "", 1)
+            print(f"::warning file={file_name},line={line}::Cache hotspot in {func}")
+
+    return bool(i1 or ll or matches) 
+
 def parse_gperftools(file_path):
     if not os.path.exists(file_path):
         return False
@@ -64,25 +95,32 @@ def parse_gperftools(file_path):
 
 def main():
     if len(sys.argv) < 5:
-        print("::error::Usage: parse_profile.py <memcheck> <callgrind> <pprof> <binary>")
+        print("::error::Usage: parse_profile.py <memcheck> <callgrind> <cachegrind> <pprof> <binary>")
         sys.exit(1)
 
     debug_args()
 
-    mem_file, call_file, pprof_file, binary = sys.argv[1:5]
+    mem_file = sys.argv[1]
+    call_file = sys.argv[2]
+    cache_file = sys.argv[3]   # New
+    pprof_file = sys.argv[4]
+    binary = sys.argv[5]
+
     print(f"::group::Profiling results for {binary}")
 
     has_issues = False
-    for path, parser in [
-        (mem_file, parse_valgrind_memcheck),
-        (call_file, parse_valgrind_callgrind),
-        (pprof_file, parse_gperftools),
-    ]:
-        if os.path.exists(path):
-            has_issues |= parser(path)
+
+    if os.path.exists(mem_file):
+        has_issues |= parse_valgrind_memcheck(mem_file)
+    if os.path.exists(call_file):
+        has_issues |= parse_valgrind_callgrind(call_file)
+    if os.path.exists(cache_file):
+        has_issues |= parse_valgrind_cachegrind(cache_file)
+    if os.path.exists(pprof_file):
+        has_issues |= parse_gperftools(pprof_file)
 
     if not has_issues:
-        print("::notice::No issues detected")
+        print("::notice::No performance or memory issues detected")
     print("::endgroup::")
 
 if __name__ == "__main__":
