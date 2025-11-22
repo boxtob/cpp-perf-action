@@ -47,29 +47,35 @@ def parse_valgrind_callgrind(file_path):
     return bool(hotspots)
 
 def parse_valgrind_cachegrind(file_path):
-    if not os.path.exists(file_path):
+    # Try the summary file first (preferred)
+    summary_path = file_path.replace(".out", "_summary.txt")
+    if os.path.exists(summary_path):
+        with open(summary_path, "r") as f:
+            output = f.read()
+    elif os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            output = f.read()
+    else:
         return False
 
-    with open(file_path, "r") as f:
-        output = f.read()
+    # Extract global cache misses
+    i1 = re.search(r"I1\s+misses:\s+([\d,]+)", output)
+    ll = re.search(r"LL\s+misses:\s+([\d,]+)", output)
+    if i1 or ll:
+        i1_val = i1.group(1).replace(",", "") if i1 else "0"
+        ll_val = ll.group(1).replace(",", "") if ll else "0"
+        print(f"::warning::Cache misses → I1: {i1_val}, LL: {ll_val}")
 
-    # Cache misses from summary
-    i1_miss = re.search(r"I1\s+misses:\s+([\d,]+)", output)
-    ll_miss = re.search(r"LL\s+misses:\s+([\d,]+)", output)
-    if i1_miss or ll_miss:
-        i1 = i1_miss.group(1).replace(",", "") if i1_miss else "0"
-        ll = ll_miss.group(1).replace(",", "") if ll_miss else "0"
-        print(f"::warning::Cache misses → I1: {i1}, LL: {ll}")
-
-    # Hot functions from cg_annotate-style summary (if present)
-    hot_pattern = r"([\d,]+)\s+[\d.]+\s+[\d.]+\s+(.+?)\s+\((.*?):(\d+)\)"
-    matches = re.findall(hot_pattern, output, re.MULTILINE)
-    for ir, _, file_name, line_number in matches:
+    # Extract per-function hotspot lines
+    # Example: "  1,234,567  12.3%  123,456  test.cpp:main"
+    pattern = r"^\s*[\d,]+\s+[\d.]+\%\s*[\d,]+\s+(.+?)\s+\((.*?):(\d+)\)"
+    matches = re.findall(pattern, output, re.MULTILINE)
+    for func, file_name, line in matches:
         if file_name.startswith("/workspace/"):
             file_name = file_name.replace("/workspace/", "", 1)
-            print(f"::warning file={file_name},line={line_number}::Cache hotspot: {ir} instructions")
+            print(f"::warning file={file_name},line={line}::Cache hotspot in {func}")
 
-    return bool(i1_miss or ll_miss or matches)    
+    return bool(i1 or ll or matches) 
 
 def parse_gperftools(file_path):
     if not os.path.exists(file_path):
