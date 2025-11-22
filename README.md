@@ -8,6 +8,7 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
 
 * Memory-leak detection with source-line annotations (`::error file=…`)
 * CPU hotspot reporting (callgrind & gperftools)
+* High-precision tracing profiling (cachegrind)
 * Configurable per-run (memcheck / callgrind / gperftools)
 * Fail the job on leaks (optional)
 * Uploads raw `.out` files as artifacts
@@ -17,12 +18,14 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
 
 ```yaml
 - name: Run C++ Profiler (Experimental)
-  uses: boxtob/cpp-perf-action@v1.0.1
+  uses: boxtob/cpp-perf-action@v1.1.0
   with:
     binaries: build/test
     apt-packages: libgl1-mesa-dev libglfw3-dev
     ld-library-path: /workspace/libs
     valgrind-memcheck: true
+    valgrind-callgrind: true
+    valgrind-cachegrind: true
     gperftools: true
     fail-on-leak: true
     run-args: --verbose
