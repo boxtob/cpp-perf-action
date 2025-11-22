@@ -63,6 +63,8 @@ runs:
     INPUT_BINARIES: ${{ inputs.binaries }}
     INPUT_VALGRIND_MEMCHECK: ${{ inputs.valgrind-memcheck }}
     INPUT_VALGRIND_CALLGRIND: ${{ inputs.valgrind-callgrind }}
+    INPUT_VALGRIND_CACHEGRIND: ${{ inputs.valgrind-cachegrind }}
+    INPUT_VALGRIND_CACHEGRIND_OUT_FILE: ${{ inputs.valgrind-cachegrind-out-file }}
     INPUT_GPERFTOOLS: ${{ inputs.gperftools }}
     INPUT_FAIL_ON_LEAK: ${{ inputs.fail-on-leak }} 
     INPUT_APT_PACKAGES: ${{ inputs.apt-packages }}
