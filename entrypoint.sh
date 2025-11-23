@@ -163,11 +163,11 @@ for bin in "${BINARIES[@]}"; do
 
   # Parse
   /app/venv/bin/python /app/parse_profile.py \
-    "${bin}_valgrind_memcheck.out" \
-    "${bin}_valgrind_callgrind.out" \
-    "${bin_name}_cachegrind.out" \    
-    "${bin}_pprof.out" \
-    "$bin"
+    "${bin_name}_valgrind_memcheck.out" \
+    "${bin_name}_valgrind_callgrind.out" \
+    "${bin_name}_cachegrind.out" \
+    "${bin_name}_pprof.out" \
+    "$bin_name"
 done
 
 # ---- Fail on leak -------------------------------------------------------
