@@ -94,7 +94,7 @@ def parse_gperftools(file_path):
     return bool(hotspots)
 
 def main():
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print("::error::Usage: parse_profile.py <memcheck> <callgrind> <cachegrind> <pprof> <binary>")
         sys.exit(1)
 
@@ -102,7 +102,7 @@ def main():
 
     mem_file = sys.argv[1]
     call_file = sys.argv[2]
-    cache_file = sys.argv[3]   # New
+    cache_file = sys.argv[3]
     pprof_file = sys.argv[4]
     binary = sys.argv[5]
 
