@@ -183,7 +183,8 @@ ARTIFACT_DIR="artifacts"
 mkdir -vp "$ARTIFACT_DIR"
 
 # Copy from container's current dir to ARTIFACT_DIR
-cp -vf *.out *.png *.dot "*_cachegrind.out.*" "*_cachegrind.log" "*_cachegrind_summary.txt" "$ARTIFACT_DIR"/ 2>/dev/null || true
+cp -vf *.out *.png *.dot *.out.* *.log "$ARTIFACT_DIR"/ 2>/dev/null || true
+cp -vf "${bin_name}_cachegrind.out.%p" "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
 
