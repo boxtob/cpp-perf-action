@@ -47,35 +47,42 @@ def parse_valgrind_callgrind(file_path):
     return bool(hotspots)
 
 def parse_valgrind_cachegrind(file_path):
-    # Try the summary file first (preferred)
+    # Prefer the cg_annotate summary (if exists)
     summary_path = file_path.replace(".out", "_summary.txt")
     if os.path.exists(summary_path):
-        with open(summary_path, "r") as f:
+        with open(summary_path, "r", encoding="utf-8", errors="ignore") as f:
             output = f.read()
     elif os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            output = f.read()
+        # Fallback: read raw .out file safely
+        with open(file_path, "rb") as f:
+            raw = f.read().decode("utf-8", errors="ignore")
     else:
         return False
 
-    # Extract global cache misses
+    has_issue = False
+
+    # Global cache misses
     i1 = re.search(r"I1\s+misses:\s+([\d,]+)", output)
     ll = re.search(r"LL\s+misses:\s+([\d,]+)", output)
     if i1 or ll:
         i1_val = i1.group(1).replace(",", "") if i1 else "0"
         ll_val = ll.group(1).replace(",", "") if ll else "0"
         print(f"::warning::Cache misses → I1: {i1_val}, LL: {ll_val}")
+        has_issue = True
 
-    # Extract per-function hotspot lines
+    # Per-function hotspots (from cg_annotate-style output)
     # Example: "  1,234,567  12.3%  123,456  test.cpp:main"
     pattern = r"^\s*[\d,]+\s+[\d.]+\%\s*[\d,]+\s+(.+?)\s+\((.*?):(\d+)\)"
-    matches = re.findall(pattern, output, re.MULTILINE)
-    for func, file_name, line in matches:
-        if file_name.startswith("/workspace/"):
-            file_name = file_name.replace("/workspace/", "", 1)
-            print(f"::warning file={file_name},line={line}::Cache hotspot in {func}")
+    for line in output.splitlines():
+        match = re.match(pattern, line)
+        if match:
+            func, file_name, line_num = match.groups()
+            if file_name.startswith("/workspace/"):
+                file_name = file_name.replace("/workspace/", "", 1)
+                print(f"::warning file={file_name},line={line_num}::Cache hotspot in {func}")
+                has_issue = True
 
-    return bool(i1 or ll or matches) 
+    return has_issue
 
 def parse_gperftools(file_path):
     if not os.path.exists(file_path):
