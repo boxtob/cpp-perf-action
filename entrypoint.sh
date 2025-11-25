@@ -94,12 +94,12 @@ for bin in "${BINARIES[@]}"; do
   if [[ "${INPUT_VALGRIND_CACHEGRIND:-false}" == "true" ]]; then
     echo "Running Valgrind Cachegrind (L1/LL cache simulation)..."
 
-    cachegrind_file="${bin_name}_${INPUT_VALGRIND_CACHEGRIND_OUT_FILE:-cachegrind.out.%p}"
+    cachegrind_file="${bin_name}_cachegrind.out.%p"
 
     valgrind --tool=cachegrind \
       --cachegrind-out-file="$cachegrind_file" \
       "./$bin_name" "${RUN_ARGS[@]}" \
-      > "${bin_name}_cachegrind.out" 2>&1 || true
+      > "${bin_name}_cachegrind.log" 2>&1 || true
 
     # Generate human-readable summary with cg_annotate
     if command -v cg_annotate &>/dev/null; then
@@ -165,7 +165,7 @@ for bin in "${BINARIES[@]}"; do
   /app/venv/bin/python /app/parse_profile.py \
     "${bin_name}_valgrind_memcheck.out" \
     "${bin_name}_valgrind_callgrind.out" \
-    "${bin_name}_cachegrind.out" \
+    "${bin_name}_cachegrind_summary.txt" \
     "${bin_name}_pprof.out" \
     "$bin_name"
 done
@@ -183,7 +183,7 @@ ARTIFACT_DIR="artifacts"
 mkdir -vp "$ARTIFACT_DIR"
 
 # Copy from container's current dir to ARTIFACT_DIR
-cp -vf *.out *.png *.dot *.txt "*.out.*" "$ARTIFACT_DIR"/ 2>/dev/null || true
+cp -vf *.out *.png *.dot "*_cachegrind.out.*" "*_cachegrind.log" "*_cachegrind_summary.txt "$ARTIFACT_DIR"/ 2>/dev/null || true
 
 echo "Artifacts ready at $ARTIFACT_DIR:"
 
