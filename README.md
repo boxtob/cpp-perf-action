@@ -1,24 +1,29 @@
 # C++ Performance Profiler GitHub Action
 
 ![Version](https://img.shields.io/github/v/release/boxtob/cpp-perf-action)
+![ARM64 Ready](https://img.shields.io/badge/ARM64-native-green)
 
 Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on your C/C++ binaries in every PR.
 
 ## Features
 
-* Memory-leak detection with source-line annotations (`::error file=…`)
-* CPU hotspot reporting (callgrind & gperftools)
-* High-precision tracing profiling (cachegrind)
-* Configurable per-run (memcheck / callgrind / gperftools)
-* Fail the job on leaks (optional)
-* Uploads raw `.out` files as artifacts
-* Uploads flamegraph `.png`files as artifacts
+- Memory leak detection with `::error file=...` annotations
+- CPU hotspot reporting (callgrind + gperftools)
+- Full L1/LL **cache simulation** (cachegrind)
+- Flamegraph PNG uploaded as artifact
+- Runtime `apt-get install` for missing system libraries
+- Custom `LD_LIBRARY_PATH` for your `.so` files
+- Pass any runtime args (`--config`, `--verbose`, etc.)
+- Fail CI on leaks or excessive hotspots
+- Works on **Linux x86_64 and ARM64**
 
 ## Quick start
 
+### x86_64 (standard runners)
+
 ```yaml
-- name: Run C++ Profiler (Experimental)
-  uses: boxtob/cpp-perf-action@v1.1.5
+- name: Run C++ Profiler (x86_64)
+  uses: boxtob/cpp-perf-action@v1.2.0
   with:
     binaries: build/test
     apt-packages: libgl1-mesa-dev libglfw3-dev
@@ -38,6 +43,47 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
     path: ${{ steps.profiler.outputs.artifacts }}
 ```
 
+### ARM64 (native – Apple Silicon, Graviton, Raspberry Pi)
+
+```yaml
+jobs:
+  profile-arm64:
+    runs-on: ubuntu-latest-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run C++ Profiler (ARM64)
+        uses: boxtob/cpp-perf-action@v1.2.0
+        with:
+          binaries: test-arm64
+          run-args: --verbose
+          valgrind-memcheck: true
+          gperftools: true
+```
+
+### Platform Support Table
+
+| Architecture   | Runner                          | Speed     | Recommended?
+|----------------|---------------------------------|-----------|---------------
+| Linux x86_64   | `ubuntu-latest`                 | Fastest   | Yes (default)
+| Linux ARM64    | `ubuntu-latest-arm64`           | Native    | Yes (best)
+
+## Native ARM64 Support
+
+This Action runs **natively** on GitHub's official ARM64 runners:
+
+```yaml
+runs-on: ubuntu-latest-arm64
+````
+
+No QEMU. No cross-compilation. Full Valgrind + gperftools performance.
+Perfect for:
+* Apple Silicon (M1/M2/M3) CI
+* AWS Graviton
+* Raspberry Pi
+* Any modern ARM server
+
+Just use `ubuntu-latest-arm64` — the correct image is pulled automatically.
 
 ## Binary Compatibility
 
@@ -50,12 +96,13 @@ Your binary will work if built on:
 - Fedora 34+
 - Arch Linux, Manjaro, openSUSE, etc.
 - WSL2 (Ubuntu/Debian)
-- Any cross-compile targeting `x86_64-linux-gnu` with glibc ≤ 2.39
+- Apple Silicon
+- Graviton
+- Raspberry Pi
 
 Will **NOT** work:
 - Alpine Linux (uses musl)
 - macOS / Windows binaries
-- ARM binaries
 - Very old distros (e.g., CentOS 7)
 
-**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest`) — guaranteed compatibility.
+**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest` or `ubuntu-latest-arm64`) — guaranteed compatibility.
