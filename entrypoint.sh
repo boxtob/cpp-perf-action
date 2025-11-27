@@ -4,7 +4,6 @@ set -euo pipefail
 echo "Container started"
 echo "Working directory: $(pwd)"
 echo "Input binaries: $@"
-echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
 
 # ---- Debug: local mode -----------------------------------------------------------------------------------------------
 [[ -z "${GITHUB_ACTIONS:-}" ]] && echo "Running in local mode"
