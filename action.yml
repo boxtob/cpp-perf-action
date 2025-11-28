@@ -56,7 +56,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/boxtob/cpp-perf-action:1.1.5'
+  image: 'docker://ghcr.io/boxtob/cpp-perf-action:1.2.3'
   args: []
   env:
     INPUT_BINARIES: ${{ inputs.binaries }}
