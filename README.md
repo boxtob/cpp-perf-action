@@ -48,7 +48,7 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
 ```yaml
 jobs:
   profile-arm64:
-    runs-on: ubuntu-latest-arm64
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -66,14 +66,14 @@ jobs:
 | Architecture   | Runner                          | Speed     | Recommended?
 |----------------|---------------------------------|-----------|---------------
 | Linux x86_64   | `ubuntu-latest`                 | Fastest   | Yes (default)
-| Linux ARM64    | `ubuntu-latest-arm64`           | Native    | Yes (best)
+| Linux ARM64    | `ubuntu-24.04-arm`              | Native    | Yes (best)
 
 ## Native ARM64 Support
 
 This Action runs **natively** on GitHub's official ARM64 runners:
 
 ```yaml
-runs-on: ubuntu-latest-arm64
+runs-on: ubuntu-24.04-arm
 ````
 
 No QEMU. No cross-compilation. Full Valgrind + gperftools performance.
@@ -83,7 +83,7 @@ Perfect for:
 * Raspberry Pi
 * Any modern ARM server
 
-Just use `ubuntu-latest-arm64` — the correct image is pulled automatically.
+Just use `ubuntu-24.04-arm` — the correct image is pulled automatically.
 
 ## Binary Compatibility
 
@@ -105,4 +105,4 @@ Will **NOT** work:
 - macOS / Windows binaries
 - Very old distros (e.g., CentOS 7)
 
-**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest` or `ubuntu-latest-arm64`) — guaranteed compatibility.
+**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest` or `ubuntu-24.04-arm`) — guaranteed compatibility.
