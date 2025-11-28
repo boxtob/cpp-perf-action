@@ -23,7 +23,7 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
 
 ```yaml
 - name: Run C++ Profiler (x86_64)
-  uses: boxtob/cpp-perf-action@v1.2.1
+  uses: boxtob/cpp-perf-action@v1.2.3
   with:
     binaries: build/test
     apt-packages: libgl1-mesa-dev libglfw3-dev
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run C++ Profiler (ARM64)
-        uses: boxtob/cpp-perf-action@v1.2.2
+        uses: boxtob/cpp-perf-action@v1.2.3
         with:
           binaries: test-arm64
           run-args: --verbose
