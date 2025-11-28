@@ -39,9 +39,15 @@ else
 fi
 
 # ---- Binaries -----------------------------------------------------------
-BINARIES=("${@:-}")
+if [[ -n "${INPUT_BINARIES:-}" ]]; then
+  BINARIES=($INPUT_BINARIES)
+else
+  echo "::error::No binaries specified. Use 'binaries:' input in workflow."
+  exit 1
+fi
+
 [[ ${#BINARIES[@]} -eq 0 ]] && {
-  echo "::error::No binaries specified. Use 'binaries: your_binary' in workflow."
+  echo "::error::Binaries input is empty"
   exit 1
 }
 

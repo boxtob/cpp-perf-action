@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run C++ Profiler (ARM64)
-        uses: boxtob/cpp-perf-action@v1.2.1
+        uses: boxtob/cpp-perf-action@v1.2.2
         with:
           binaries: test-arm64
           run-args: --verbose

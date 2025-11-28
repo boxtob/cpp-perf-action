@@ -57,8 +57,7 @@ outputs:
 runs:
   using: 'docker'
   image: 'docker://ghcr.io/boxtob/cpp-perf-action:1.1.5'
-  args:
-      - ${{ inputs.binaries }}
+  args: []
   env:
     INPUT_BINARIES: ${{ inputs.binaries }}
     INPUT_VALGRIND_MEMCHECK: ${{ inputs.valgrind-memcheck }}
