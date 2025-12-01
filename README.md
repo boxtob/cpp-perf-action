@@ -43,7 +43,7 @@ Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on yo
     path: ${{ steps.profiler.outputs.artifacts }}
 ```
 
-### ARM64 (native – Apple Silicon, Graviton, Raspberry Pi)
+### ARM64 (native – Graviton, Raspberry Pi)
 
 ```yaml
 jobs:
@@ -67,6 +67,7 @@ jobs:
 |----------------|---------------------------------|-----------|---------------
 | Linux x86_64   | `ubuntu-latest`                 | Fastest   | Yes (default)
 | Linux ARM64    | `ubuntu-24.04-arm`              | Native    | Yes (best)
+| Linux ARM64    | `ubuntu-22.04-arm`              | Native    | Yes (best)
 
 ## Native ARM64 Support
 
@@ -78,7 +79,6 @@ runs-on: ubuntu-24.04-arm
 
 No QEMU. No cross-compilation. Full Valgrind + gperftools performance.
 Perfect for:
-* Apple Silicon (M1/M2/M3) CI
 * AWS Graviton
 * Raspberry Pi
 * Any modern ARM server
@@ -96,7 +96,6 @@ Your binary will work if built on:
 - Fedora 34+
 - Arch Linux, Manjaro, openSUSE, etc.
 - WSL2 (Ubuntu/Debian)
-- Apple Silicon
 - Graviton
 - Raspberry Pi
 
@@ -105,4 +104,4 @@ Will **NOT** work:
 - macOS / Windows binaries
 - Very old distros (e.g., CentOS 7)
 
-**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest` or `ubuntu-24.04-arm`) — guaranteed compatibility.
+**Best practice**: Build your binary **in the same GitHub Actions job** (`ubuntu-latest` or `ubuntu-22.04-arm` or `ubuntu-24.04-arm`) — guaranteed compatibility.
