@@ -2,6 +2,7 @@
 
 ![Version](https://img.shields.io/github/v/release/boxtob/cpp-perf-action)
 ![ARM64 Ready](https://img.shields.io/badge/ARM64-native-green)
+![License](https://img.shields.io/github/license/boxtob/cpp-perf-action)
 
 Automatically run **Valgrind memcheck**, **callgrind**, and **gperftools** on your C/C++ binaries in every PR.
 
